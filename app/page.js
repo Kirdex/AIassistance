@@ -1,18 +1,20 @@
 'use client'
 
-import { Box, Button, Stack, TextField } from '@mui/material'
+import { Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 
 export default function Home() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hi! I'm the KaamYaab support assistant. How can I help you today?",
+      content: "Hi! I'm the Customer support assistant. How can I help you today?",
     },
   ])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [feedback, setFeedback] = useState('')
+  const [feedbackVisible, setFeedbackVisible] = useState(false)
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
   const messagesEndRef = useRef(null)
 
   const sendMessage = async () => {
@@ -81,6 +83,20 @@ export default function Home() {
     scrollToBottom()
   }, [messages])
 
+  const handleFeedbackSubmit = () => {
+    // Handle the feedback submission (e.g., send it to a server or save it locally)
+    console.log('Feedback submitted:', feedback)
+    setFeedback('')
+    setFeedbackSubmitted(true)
+  }
+
+  const toggleFeedbackVisibility = () => {
+    setFeedbackVisible((prev) => !prev)
+    if (feedbackSubmitted) {
+      setFeedbackSubmitted(false) // Reset feedback submitted status
+    }
+  }
+
   return (
     <Box
       width="100vw"
@@ -89,21 +105,68 @@ export default function Home() {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
+      bgcolor="black" // Background color for the page
     >
       <Stack
         direction={'column'}
         width="500px"
         height="700px"
-        border="1px solid black"
-        p={2}
-        spacing={3}
+        borderRadius={8}
+        border="1px solid #ccc"
+        boxShadow="0 4px 4px rgba(0, 0, 0, 0.1)"
+        bgcolor="white"
+        position="relative" 
+        display="flex"
+        flexDirection="column"
       >
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={toggleFeedbackVisibility}
+          disabled={isLoading}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            color: 'black',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            minWidth: 'auto',
+            p: 0,
+            fontSize: '20px',
+          }}
+        >
+          X
+        </Button>
+        <Box
+          bgcolor="#1976d2" // Darker blue for header
+          color="white"
+          p={2} // Increased padding for better spacing
+          borderRadius="8px 8px 0 0"
+          fontWeight="bold"
+          textAlign="center"
+        >
+          Support Chat
+        </Box>
         <Stack
           direction={'column'}
           spacing={2}
           flexGrow={1}
           overflow="auto"
-          maxHeight="100%"
+          pr={1} // Padding to avoid text overlapping with scrollbar
+          sx={{
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#888',
+              borderRadius: '8px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: '#555',
+            },
+          }}
         >
           {messages.map((message, index) => (
             <Box
@@ -116,30 +179,71 @@ export default function Home() {
               <Box
                 bgcolor={
                   message.role === 'assistant'
-                    ? 'primary.main'
-                    : 'secondary.main'
+                    ? 'lightblue' // Light blue for assistant messages
+                    : '#c5e1a5' // Light green for user messages
                 }
-                color="white"
-                borderRadius={16}
-                p={3}
+                color="black"
+                borderRadius={20}
+                p={2}
+                maxWidth="75%"
+                boxShadow="0 2px 4px rgba(0, 0, 0, 0.1)"
               >
                 {message.content}
               </Box>
             </Box>
           ))}
+          <div ref={messagesEndRef} />
         </Stack>
-        <Stack direction={'row'} spacing={2}>
+        <Stack direction={'row'} spacing={2} alignItems="center" p={2}>
           <TextField
             label="Message"
             fullWidth
+            variant="outlined"
+            size="small"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
+            sx={{ bgcolor: '#f5f5f5' }}
           />
-          <Button variant="contained" onClick={sendMessage}>
-            Send
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={sendMessage}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Sending...' : 'Send'}
           </Button>
         </Stack>
+        {feedbackVisible && (
+          <Box p={2}>
+            <Typography variant="h6" gutterBottom>
+              Feedback
+            </Typography>
+            <TextField
+              label="Your feedback"
+              multiline
+              rows={4}
+              fullWidth
+              variant="outlined"
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              sx={{ bgcolor: '#f5f5f5' }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleFeedbackSubmit}
+              sx={{ mt: 2 }}
+            >
+              Submit Feedback
+            </Button>
+            {feedbackSubmitted && (
+              <Typography variant="body2" color="green" mt={1}>
+                Thank you for your feedback!
+              </Typography>
+            )}
+          </Box>
+        )}
       </Stack>
     </Box>
   )
